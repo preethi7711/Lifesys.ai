@@ -1,8 +1,11 @@
-# Environment variables
+# env files
 .env
 
-# Node modules
+# dependencies
 node_modules/
 
-# Logs
+# build output
+dist/
+
+# logs
 npm-debug.log*
