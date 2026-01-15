@@ -1,16 +1,13 @@
 import { useState } from "react";
 
+const BACKEND_URL = "https://lifesys-backend.onrender.com";
+
 function App() {
   const [goals, setGoals] = useState("");
   const [routine, setRoutine] = useState("");
   const [analysis, setAnalysis] = useState("");
   const [streak, setStreak] = useState(0);
   const [mode, setMode] = useState("");
-
-  const [chatInput, setChatInput] = useState("");
-  const [chatReply, setChatReply] = useState("");
-
-  const BACKEND_URL = "https://lifesys-backend.onrender.com";
 
   const analyzeLife = async () => {
     const res = await fetch(`${BACKEND_URL}/analyze-life`, {
@@ -35,85 +32,127 @@ function App() {
     const data = await res.json();
     setStreak(data.streak);
     setMode(data.mode);
-
-    // Re-run analysis after streak update
     await analyzeLife();
   };
 
-  const sendChat = async () => {
-    if (!chatInput.trim()) return;
-
-    setChatReply("Thinking...");
-
-    const res = await fetch(`${BACKEND_URL}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: chatInput }),
-    });
-
-    const data = await res.json();
-    setChatReply(data.reply);
-    setChatInput("");
-  };
-
   return (
-    <div style={{ padding: 40, fontFamily: "Arial", maxWidth: 700 }}>
-      <h1>🌱 AI Life System Planner</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f6f8fa",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        paddingTop: "40px",
+      }}
+    >
+      <div
+        style={{
+          background: "#ffffff",
+          width: "100%",
+          maxWidth: "800px",
+          padding: "30px 40px",
+          borderRadius: "12px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <h1 style={{ marginBottom: 25 }}>🌱 AI Life System Planner</h1>
 
-      <label>Life Goals</label>
-      <textarea
-        value={goals}
-        onChange={(e) => setGoals(e.target.value)}
-        style={{ width: "100%", height: 50, marginBottom: 10 }}
-      />
+        <label><strong>Life Goals</strong></label>
+        <textarea
+          value={goals}
+          onChange={(e) => setGoals(e.target.value)}
+          style={{
+            width: "100%",
+            height: 60,
+            marginTop: 6,
+            marginBottom: 20,
+            padding: 10,
+          }}
+        />
 
-      <label>Current Routine</label>
-      <textarea
-        value={routine}
-        onChange={(e) => setRoutine(e.target.value)}
-        style={{ width: "100%", height: 50, marginBottom: 20 }}
-      />
+        <label><strong>Current Routine</strong></label>
+        <textarea
+          value={routine}
+          onChange={(e) => setRoutine(e.target.value)}
+          style={{
+            width: "100%",
+            height: 60,
+            marginTop: 6,
+            marginBottom: 20,
+            padding: 10,
+          }}
+        />
 
-      <button onClick={analyzeLife}>Analyze My Life System</button>
+        <button
+          onClick={analyzeLife}
+          style={{
+            padding: "10px 18px",
+            borderRadius: 6,
+            border: "none",
+            cursor: "pointer",
+            background: "#111827",
+            color: "#fff",
+            fontSize: 14,
+          }}
+        >
+          Analyze My Life System
+        </button>
 
-      {analysis && (
-        <>
-          <pre style={{ marginTop: 20, whiteSpace: "pre-wrap" }}>
-            {analysis}
-          </pre>
+        {analysis && (
+          <>
+            <pre
+              style={{
+                marginTop: 30,
+                whiteSpace: "pre-wrap",
+                background: "#f3f4f6",
+                padding: 20,
+                borderRadius: 8,
+                fontSize: 14,
+              }}
+            >
+              {analysis}
+            </pre>
 
-          <h3>🔥 Current Streak: {streak} days</h3>
-          <p>
-            📈 Current Mode: <strong>{mode}</strong>
-          </p>
-
-          <p>Did you follow the routine today?</p>
-          <button onClick={() => updateStreak(true)}>Yes</button>
-          <button onClick={() => updateStreak(false)} style={{ marginLeft: 10 }}>
-            No
-          </button>
-
-          <hr style={{ margin: "30px 0" }} />
-
-          <h2>🤖 AI Coach</h2>
-
-          <input
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Ask: why this routine? what if I miss?"
-            style={{ width: "100%", padding: 8 }}
-          />
-          <button onClick={sendChat} style={{ marginTop: 10 }}>
-            Ask Coach
-          </button>
-
-          {chatReply && (
-            <div style={{ marginTop: 10, background: "#f4f4f4", padding: 10 }}>
-              <strong>AI Coach:</strong> {chatReply}
+            <div style={{ marginTop: 20 }}>
+              <h3>🔥 Current Streak: {streak} days</h3>
+              <p>
+                📈 Current Mode: <strong>{mode}</strong>
+              </p>
             </div>
-          )}
-        </>
-      )}
+
+            <div style={{ marginTop: 10 }}>
+              <p><strong>Did you follow the routine today?</strong></p>
+              <button
+                onClick={() => updateStreak(true)}
+                style={{
+                  padding: "8px 14px",
+                  marginRight: 10,
+                  borderRadius: 6,
+                  border: "1px solid #16a34a",
+                  background: "#16a34a",
+                  color: "#fff",
+                }}
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => updateStreak(false)}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 6,
+                  border: "1px solid #dc2626",
+                  background: "#dc2626",
+                  color: "#fff",
+                }}
+              >
+                No
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
