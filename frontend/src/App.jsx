@@ -9,6 +9,11 @@ function App() {
   const [streak, setStreak] = useState(0);
   const [mode, setMode] = useState("");
 
+  // 🧠 AI Coach states
+  const [coachQuestion, setCoachQuestion] = useState("");
+  const [coachReply, setCoachReply] = useState("");
+  const [loadingCoach, setLoadingCoach] = useState(false);
+
   const analyzeLife = async () => {
     const res = await fetch(`${BACKEND_URL}/analyze-life`, {
       method: "POST",
@@ -20,6 +25,7 @@ function App() {
     setAnalysis(data.aiResponse);
     setStreak(data.streak);
     setMode(data.mode);
+    setCoachReply(""); // reset coach when re-analyzing
   };
 
   const updateStreak = async (followedToday) => {
@@ -33,6 +39,30 @@ function App() {
     setStreak(data.streak);
     setMode(data.mode);
     await analyzeLife();
+  };
+
+  // 🤖 Ask Coach
+  const askCoach = async () => {
+    if (!coachQuestion.trim()) return;
+
+    setLoadingCoach(true);
+    setCoachReply("Thinking...");
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: coachQuestion }),
+      });
+
+      const data = await res.json();
+      setCoachReply(data.reply || "No response.");
+    } catch (err) {
+      setCoachReply("Something went wrong. Please try again.");
+    } finally {
+      setLoadingCoach(false);
+      setCoachQuestion("");
+    }
   };
 
   return (
@@ -63,26 +93,14 @@ function App() {
         <textarea
           value={goals}
           onChange={(e) => setGoals(e.target.value)}
-          style={{
-            width: "100%",
-            height: 60,
-            marginTop: 6,
-            marginBottom: 20,
-            padding: 10,
-          }}
+          style={{ width: "100%", height: 60, marginBottom: 20, padding: 10 }}
         />
 
         <label><strong>Current Routine</strong></label>
         <textarea
           value={routine}
           onChange={(e) => setRoutine(e.target.value)}
-          style={{
-            width: "100%",
-            height: 60,
-            marginTop: 6,
-            marginBottom: 20,
-            padding: 10,
-          }}
+          style={{ width: "100%", height: 60, marginBottom: 20, padding: 10 }}
         />
 
         <button
@@ -94,7 +112,6 @@ function App() {
             cursor: "pointer",
             background: "#111827",
             color: "#fff",
-            fontSize: 14,
           }}
         >
           Analyze My Life System
@@ -115,41 +132,42 @@ function App() {
               {analysis}
             </pre>
 
-            <div style={{ marginTop: 20 }}>
-              <h3>🔥 Current Streak: {streak} days</h3>
-              <p>
-                📈 Current Mode: <strong>{mode}</strong>
-              </p>
-            </div>
+            <h3>🔥 Current Streak: {streak} days</h3>
+            <p>📈 Current Mode: <strong>{mode}</strong></p>
 
-            <div style={{ marginTop: 10 }}>
-              <p><strong>Did you follow the routine today?</strong></p>
-              <button
-                onClick={() => updateStreak(true)}
+            <p><strong>Did you follow the routine today?</strong></p>
+            <button onClick={() => updateStreak(true)}>Yes</button>
+            <button onClick={() => updateStreak(false)} style={{ marginLeft: 10 }}>
+              No
+            </button>
+
+            {/* 🤖 AI COACH */}
+            <hr style={{ margin: "30px 0" }} />
+            <h2>🤖 AI Coach</h2>
+
+            <input
+              value={coachQuestion}
+              onChange={(e) => setCoachQuestion(e.target.value)}
+              placeholder="Ask: Why this routine? What if I miss a day?"
+              style={{ width: "100%", padding: 10, marginBottom: 10 }}
+            />
+
+            <button onClick={askCoach} disabled={loadingCoach}>
+              Ask Coach
+            </button>
+
+            {coachReply && (
+              <div
                 style={{
-                  padding: "8px 14px",
-                  marginRight: 10,
-                  borderRadius: 6,
-                  border: "1px solid #16a34a",
-                  background: "#16a34a",
-                  color: "#fff",
+                  marginTop: 15,
+                  background: "#f3f4f6",
+                  padding: 15,
+                  borderRadius: 8,
                 }}
               >
-                Yes
-              </button>
-              <button
-                onClick={() => updateStreak(false)}
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: 6,
-                  border: "1px solid #dc2626",
-                  background: "#dc2626",
-                  color: "#fff",
-                }}
-              >
-                No
-              </button>
-            </div>
+                <strong>AI Coach:</strong> {coachReply}
+              </div>
+            )}
           </>
         )}
       </div>
